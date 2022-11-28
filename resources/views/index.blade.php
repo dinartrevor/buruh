@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>{{ config('app.name') }}</title>
+		<meta name="csrf-token" content="{{ csrf_token() }}">
 
 		<!-- Fonts -->
 		<link href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
@@ -15,8 +16,10 @@
 		<main class="container mt-5 pt-5">
 			<h2 class="text-center">Pembagian Bonus Buruh</h2>
 			<div class="row pt-5 justify-content-center">
-				<div class="col-8">
+				<div class="col-8" id="alert">
 					<form class="needs-validation" id="formPembagian">
+						@csrf
+						@method('PUT')
 						<div class="row">
 							<div class="col-12">
 								<label for="totalBonus" class="form-label">Total Bonus</label>
@@ -27,34 +30,24 @@
 							</div>
 						</div>
 						<div class="row mt-3">
+							@forelse ($labors as $labor)
 							<div class="col">
-								<label for="buruh_a" class="form-label">Buruh A</label>
+								<label for="buruh_{{ $labor->id }}" class="form-label">{{ $labor->name }}</label>
 								<div class="input-group has-validation">
-									<input type="number" class="form-control" min="1" max="100" id="buruh_a" required />
+									<input type="number" class="form-control" min="1" max="100" id="buruh_{{ $labor->id }}" required />
 									<span class="input-group-text">%</span>
 								</div>
-								<p id="buruh_a_output">Rp 0</p>
+								<p id="buruh_{{ $labor->id }}_output">Rp {{ $labor->bonus }}</p>
 							</div>
+							@empty
 							<div class="col">
-								<label for="buruh_b" class="form-label">Buruh B</label>
-								<div class="input-group has-validation">
-									<input type="number" class="form-control" min="1" max="100" id="buruh_b" required />
-									<span class="input-group-text">%</span>
-								</div>
-								<p id="buruh_b_output">Rp 0</p>
+								<p>Data buruh tidak ada.</p>
 							</div>
-							<div class="col">
-								<label for="buruh_c" class="form-label">Buruh C</label>
-								<div class="input-group has-validation">
-									<input type="number" class="form-control" min="1" max="100" id="buruh_c" required />
-									<span class="input-group-text">%</span>
-								</div>
-								<p id="buruh_c_output">Rp 0</p>
-							</div>
+							@endforelse
 						</div>
 						<div class="row mt-3 justify-content-end">
 							<div class="col-2">
-								<button class="w-100 btn btn-primary btn-lg" type="submit">Bayar</button>
+								<button class="w-100 btn btn-primary btn-lg" type="submit">Bagikan</button>
 							</div>
 						</div>
 					</form>
@@ -68,34 +61,73 @@
 
 		<script type="text/javascript">
 			$(document).ready(() => {
-				let totalBonus = 0
-				let buruh_a = 1
-				let buruh_b = 1
-				let buruh_c = 1
-				let hasil_buruh_a = 0
-				let hasil_buruh_b = 0
-				let hasil_buruh_c = 0
+				let token = $("meta[name='csrf-token']").attr("content");
+				let totalBonus = 0;
+				let buruh_1 = 1;
+				let buruh_2 = 1;
+				let buruh_3 = 1;
+				let hasil_buruh_1 = 0;
+				let hasil_buruh_2 = 0;
+				let hasil_buruh_3 = 0;
+				let arr = [];
 
-				$("#totalBonus, #buruh_a, #buruh_b, #buruh_c").keyup(() => {
+				$("#totalBonus, #buruh_1, #buruh_2, #buruh_3").keyup(() => {
 					totalBonus = $("#totalBonus").val() !== "" ? Number($("#totalBonus").val()) : 0;
-					buruh_a = $("#buruh_a").val() !== "" ? Number($("#buruh_a").val()) : 1;
-					buruh_b = $("#buruh_b").val() !== "" ? Number($("#buruh_b").val()) : 1;
-					buruh_c = $("#buruh_c").val() !== "" ? Number($("#buruh_c").val()) : 1;
-					hasil_buruh_a = getPercentage(totalBonus, buruh_a);
-					hasil_buruh_b = getPercentage(totalBonus, buruh_b);
-					hasil_buruh_c = getPercentage(totalBonus, buruh_c);
+					buruh_1 = $("#buruh_1").val() !== "" ? Number($("#buruh_1").val()) : 1;
+					buruh_2 = $("#buruh_2").val() !== "" ? Number($("#buruh_2").val()) : 1;
+					buruh_3 = $("#buruh_3").val() !== "" ? Number($("#buruh_3").val()) : 1;
+					hasil_buruh_1 = getPercentage(totalBonus, buruh_1);
+					hasil_buruh_2 = getPercentage(totalBonus, buruh_2);
+					hasil_buruh_3 = getPercentage(totalBonus, buruh_3);
 
-					$("#buruh_a_output").text(`Rp ${hasil_buruh_a}`);
-					$("#buruh_b_output").text(`Rp ${hasil_buruh_b}`);
-					$("#buruh_c_output").text(`Rp ${hasil_buruh_c}`);
+					$("#buruh_1_output").text(`Rp ${hasil_buruh_1}`);
+					$("#buruh_2_output").text(`Rp ${hasil_buruh_2}`);
+					$("#buruh_3_output").text(`Rp ${hasil_buruh_3}`);
 				});
 
 				$("#formPembagian").submit((e) => {
 					e.preventDefault();
 
-					if (buruh_a + buruh_b + buruh_c > 100 && hasil_buruh_a + hasil_buruh_b + hasil_buruh_c > totalBonus) {
-						alert('Pembagian bonus tidak sesuai!');
+					if (buruh_1 + buruh_2 + buruh_3 !== 100 && hasil_buruh_1 + hasil_buruh_2 + hasil_buruh_3 !== totalBonus) {
+						return alert('Pembagian bonus tidak sesuai!');
 					}
+
+					arr.push(hasil_buruh_1, hasil_buruh_2, hasil_buruh_3);
+					arr.forEach((item, i) => {
+						$.ajax({
+							url: `/labor/${i + 1}`,
+							type: 'PUT',
+							cache: false,
+							data: {
+								'bonus': item,
+								'_token': token,
+							},
+
+							success: function(response) {
+								$('#totalBonus').val('');
+								$(`#buruh_${i + 1}`).val('');
+								$(`#buruh_${i + 1}_output`).text('Rp 0');
+
+								const alert =
+									`<div class="alert alert-success alert-dismissible fade show" role="alert">
+										${response.message}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+									</div>`;
+
+								$('#alert').prepend(alert);
+							},
+
+							error: function(error) {
+								const alert =
+									`<div class="alert alert-danger alert-dismissible fade show" role="alert">
+										${error}
+										<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+									</div>`;
+
+								$('#alert').prepend(alert);
+							}
+						});
+					});
 				});
 			});
 

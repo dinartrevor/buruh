@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LaborController;
+use App\Models\Labor;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +15,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('/', 'index');
-Route::resource('labor', LaborController::class)->except(['index']);
+Route::get('/', function () {
+    $labors = Labor::all();
+
+    return view('index', compact('labors'));
+});
+Route::resource('labor', LaborController::class)->only(['update']);

@@ -15,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('labors', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->integer('bonus')->default(0);
             $table->timestamps();
         });
     }
