@@ -37,7 +37,10 @@
 									<input type="number" class="form-control" min="1" max="100" id="buruh_{{ $labor->id }}" required />
 									<span class="input-group-text">%</span>
 								</div>
-								<p id="buruh_{{ $labor->id }}_output">Rp {{ $labor->bonus }}</p>
+								<p class="mb-0" id="buruh_{{ $labor->id }}_output">Estimasi: Rp 0</p>
+								@if ($labor->bonus > 0)
+									<p class="mb-0">Bonus saat ini: Rp {{ $labor->bonus }}</p>
+								@endif
 							</div>
 							@empty
 							<div class="col">
