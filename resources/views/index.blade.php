@@ -32,14 +32,14 @@
 						<div class="row mt-3">
 							@forelse ($labors as $labor)
 							<div class="col">
-								<label for="buruh_{{ $labor->id }}" class="form-label">{{ $labor->name }}</label>
+								<label for="labor_{{ $labor->id }}" class="form-label">{{ $labor->name }}</label>
 								<div class="input-group has-validation">
-									<input type="number" class="form-control" min="1" max="100" id="buruh_{{ $labor->id }}" required />
+									<input type="number" class="form-control" min="1" max="100" id="labor_{{ $labor->id }}" required />
 									<span class="input-group-text">%</span>
 								</div>
-								<p class="mb-0" id="buruh_{{ $labor->id }}_output">Estimasi: Rp 0</p>
+								<p class="mb-0" id="labor_{{ $labor->id }}_output">Estimasi: Rp 0</p>
 								@if ($labor->bonus > 0)
-									<p class="mb-0">Bonus saat ini: Rp {{ $labor->bonus }}</p>
+								<p class="mb-0">Bonus saat ini: Rp {{ $labor->bonus }}</p>
 								@endif
 							</div>
 							@empty
@@ -66,36 +66,36 @@
 			$(document).ready(() => {
 				let token = $("meta[name='csrf-token']").attr("content");
 				let totalBonus = 0;
-				let buruh_1 = 1;
-				let buruh_2 = 1;
-				let buruh_3 = 1;
-				let hasil_buruh_1 = 0;
-				let hasil_buruh_2 = 0;
-				let hasil_buruh_3 = 0;
+				let labor_1 = 1;
+				let labor_2 = 1;
+				let labor_3 = 1;
+				let labor_result_1 = 0;
+				let labor_result_2 = 0;
+				let labor_result_3 = 0;
 				let arr = [];
 
-				$("#totalBonus, #buruh_1, #buruh_2, #buruh_3").keyup(() => {
+				$("#totalBonus, #labor_1, #labor_2, #labor_3").keyup(() => {
 					totalBonus = $("#totalBonus").val() !== "" ? Number($("#totalBonus").val()) : 0;
-					buruh_1 = $("#buruh_1").val() !== "" ? Number($("#buruh_1").val()) : 1;
-					buruh_2 = $("#buruh_2").val() !== "" ? Number($("#buruh_2").val()) : 1;
-					buruh_3 = $("#buruh_3").val() !== "" ? Number($("#buruh_3").val()) : 1;
-					hasil_buruh_1 = getPercentage(totalBonus, buruh_1);
-					hasil_buruh_2 = getPercentage(totalBonus, buruh_2);
-					hasil_buruh_3 = getPercentage(totalBonus, buruh_3);
+					labor_1 = $("#labor_1").val() !== "" ? Number($("#labor_1").val()) : 1;
+					labor_2 = $("#labor_2").val() !== "" ? Number($("#labor_2").val()) : 1;
+					labor_3 = $("#labor_3").val() !== "" ? Number($("#labor_3").val()) : 1;
+					labor_result_1 = getPercentage(totalBonus, labor_1);
+					labor_result_2 = getPercentage(totalBonus, labor_2);
+					labor_result_3 = getPercentage(totalBonus, labor_3);
 
-					$("#buruh_1_output").text(`Rp ${hasil_buruh_1}`);
-					$("#buruh_2_output").text(`Rp ${hasil_buruh_2}`);
-					$("#buruh_3_output").text(`Rp ${hasil_buruh_3}`);
+					$("#labor_1_output").text(`Rp ${labor_result_1}`);
+					$("#labor_2_output").text(`Rp ${labor_result_2}`);
+					$("#labor_3_output").text(`Rp ${labor_result_3}`);
 				});
 
 				$("#formPembagian").submit((e) => {
 					e.preventDefault();
 
-					if (buruh_1 + buruh_2 + buruh_3 !== 100 && hasil_buruh_1 + hasil_buruh_2 + hasil_buruh_3 !== totalBonus) {
+					if (labor_1 + labor_2 + labor_3 !== 100 && labor_result_1 + labor_result_2 + labor_result_3 !== totalBonus) {
 						return alert('Pembagian bonus tidak sesuai!');
 					}
 
-					arr.push(hasil_buruh_1, hasil_buruh_2, hasil_buruh_3);
+					arr.push(labor_result_1, labor_result_2, labor_result_3);
 					arr.forEach((item, i) => {
 						$.ajax({
 							url: `/labor/${i + 1}`,
@@ -108,8 +108,8 @@
 
 							success: function(response) {
 								$('#totalBonus').val('');
-								$(`#buruh_${i + 1}`).val('');
-								$(`#buruh_${i + 1}_output`).text('Rp 0');
+								$(`#labor_${i + 1}`).val('');
+								$(`#labor_${i + 1}_output`).text('Rp 0');
 
 								const alert =
 									`<div class="alert alert-success alert-dismissible fade show" role="alert">
